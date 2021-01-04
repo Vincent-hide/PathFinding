@@ -1,19 +1,37 @@
 package sample;
 
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.stage.Stage;
+import sample.mapdata.Map;
+import java.io.File;
+import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
+import javafx.stage.FileChooser;
+import sample.mapdata.Utility;
 
 public class RootLayout {
-  public static BorderPane create() {
+  private Stage mainStage;
+  private Map primaryMap;
+  private Canvas canvas;
+  private GraphicsContext gc;
+
+  public RootLayout() {
+  }
+
+  public BorderPane create() {
     BorderPane borderPane = new BorderPane();
     borderPane.getStyleClass().add("root");
     borderPane.setPadding(new Insets(5));
 
-    Label top = createLabel("TOP", "bg-2");
+    Label top = sample.Utility.createLabel("TOP", "bg-2");
     top.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
     borderPane.setTop(top);
 
@@ -26,27 +44,48 @@ public class RootLayout {
     VBox right = rightSizePathBar();
     borderPane.setRight(right);
 
-    Label bottom = createLabel("BOTTOM", "bg-6");
+    Label bottom = sample.Utility.createLabel("BOTTOM", "bg-6");
     bottom.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
     borderPane.setBottom(bottom);
 
     return borderPane;
   }
 
-  private static StackPane centerCanvas() {
+  private StackPane centerCanvas() {
     StackPane center = new StackPane();
-    Button centerBtn = new Button("CANVAS");
+//    Button centerBtn = new Button("CANVAS");
+    int width = 600, height = 500;
+    this.canvas = new Canvas(width, height);
+    gc = this.canvas.getGraphicsContext2D();
+    gc.setStroke(Color.BLACK);
+    updateCanvas();
+
     center.getStyleClass().add("bg-4");
-    center.getChildren().add(centerBtn);
+    center.getChildren().add(this.canvas);
 
     return center;
   }
 
-  private static VBox leftSizeToolBar() {
+  private VBox leftSizeToolBar() {
     VBox toolbar = new VBox();
 
-    Button loadBtn = createBtn("Load");
-    Button saveBtn = createBtn("Save");
+    Button loadBtn = sample.Utility.createBtn("Load");
+    Button saveBtn = sample.Utility.createBtn("Save");
+
+    loadBtn.setOnAction(new EventHandler<ActionEvent>() {
+      @Override
+      public void handle(ActionEvent actionEvent) {
+        FileChooser fileChooser = new FileChooser();
+        File choice = fileChooser.showOpenDialog(mainStage);
+        if (choice != null) {
+          System.out.println(choice.getName());
+          System.out.println(choice.getAbsolutePath());
+          primaryMap = Utility.loadMap(choice.getAbsolutePath());
+          primaryMap.displayRawInfo();
+          updateCanvasMap();
+        }
+      }
+    });
 
     toolbar.getChildren().addAll(loadBtn, saveBtn);
     toolbar.getStyleClass().add("bg-3");
@@ -56,8 +95,8 @@ public class RootLayout {
 
   private static VBox rightSizePathBar() {
     VBox pathbar = new VBox();
-    Button recursive = createBtn("Recursive");
-    Button dijkstra = createBtn("Dijkstra");
+    Button recursive = sample.Utility.createBtn("Recursive");
+    Button dijkstra = sample.Utility.createBtn("Dijkstra");
 
     pathbar.getChildren().addAll(recursive, dijkstra);
     pathbar.getStyleClass().add("bg-5");
@@ -65,17 +104,41 @@ public class RootLayout {
     return pathbar;
   }
 
-  private static Button createBtn(String text) {
-    Button btn = new Button(text);
-    btn.getStyleClass().add("btnStyle");
-    btn.setMaxWidth(Double.MAX_VALUE);
-    btn.setOnAction(e -> System.out.println(text + " clicked !!"));
-    return btn;
+  private void updateCanvas() {
+    int incY = 10;
+    int incX = 10;
+
+    this.gc.clearRect(0, 0, this.canvas.getWidth(), this.canvas.getHeight());
+    if (this.primaryMap != null) {
+      incX = (int) this.canvas.getWidth() / this.primaryMap.getCols();
+      incY = (int) this.canvas.getHeight() / this.primaryMap.getRows();
+    }
+
+    for (int i = 0; i < this.canvas.getWidth(); i += incX) {
+      this.gc.strokeLine(i, 0, i, this.canvas.getHeight());
+    }
+
+    for (int i = 0; i < this.canvas.getHeight(); i += incY) {
+      this.gc.strokeLine(0, i, this.canvas.getWidth(), i);
+    }
   }
 
-  private static Label createLabel(String text, String styleClass) {
-    Label lbl = new Label(text);
-    lbl.getStyleClass().add(styleClass);
-    return lbl;
+  private void updateCanvasMap() {
+    int scaleX = (int) this.canvas.getWidth() / this.primaryMap.getCols(); // ?
+    int scaleY = (int) this.canvas.getHeight() / this.primaryMap.getRows();
+
+    gc.clearRect(0, 0, this.canvas.getWidth(), this.canvas.getHeight());
+    if (this.primaryMap != null) {
+      for (int row = 0; row < this.primaryMap.getRows(); row++) {
+        for (int col = 0; col < this.primaryMap.getCols(); col++) {
+          if (this.primaryMap.getValue(row, col, 0) == 1) {
+            gc.strokeLine(col * scaleX, row * scaleY, col * scaleX + scaleX, row * scaleY);
+            gc.strokeLine(col * scaleX, row * scaleY + scaleY, col * scaleX + scaleX, row * scaleY + scaleY);
+            gc.strokeLine(col * scaleX, row * scaleY, col * scaleX, row * scaleY + scaleY);
+            gc.strokeLine(col * scaleX + scaleX, row * scaleY, col * scaleX + scaleX, row * scaleY + scaleY);
+          }
+        }
+      }
+    }
   }
 }
