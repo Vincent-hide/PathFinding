@@ -11,7 +11,9 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import sample.mapdata.Map;
+
 import java.io.File;
+
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.stage.FileChooser;
@@ -87,16 +89,48 @@ public class RootLayout {
       }
     });
 
+    saveBtn.setOnAction(new EventHandler<ActionEvent>() {
+      @Override
+      public void handle(ActionEvent actionEvent) {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Save Map");
+
+        File file = fileChooser.showSaveDialog(mainStage);
+        if (file != null) {
+          Utility.saveMap(file.getAbsolutePath(), primaryMap);
+        }
+      }
+    });
+
     toolbar.getChildren().addAll(loadBtn, saveBtn);
     toolbar.getStyleClass().add("bg-3");
     toolbar.setPrefWidth(100);
     return toolbar;
   }
 
-  private static VBox rightSizePathBar() {
+  private VBox rightSizePathBar() {
     VBox pathbar = new VBox();
     Button recursive = sample.Utility.createBtn("Recursive");
     Button dijkstra = sample.Utility.createBtn("Dijkstra");
+
+    recursive.setOnAction(new EventHandler<ActionEvent>() {
+      @Override
+      public void handle(ActionEvent actionEvent) {
+        if (primaryMap != null) {
+          int startX = 0, startY = 0;
+          int endX = primaryMap.getRows() - 1;
+          int endY = primaryMap.getCols() - 1;
+          int[][] path = Utility.intScratchPad(primaryMap, -1);
+
+          if (Utility.recursive(primaryMap, path, startX, startY, endX, endY)) {
+            System.out.println("Path Detected");
+             updateCanvas(path, 2, Color.BLUE);
+          } else {
+            System.out.println("No Path Detected");
+          }
+        }
+      }
+    });
 
     pathbar.getChildren().addAll(recursive, dijkstra);
     pathbar.getStyleClass().add("bg-5");
@@ -104,6 +138,7 @@ public class RootLayout {
     return pathbar;
   }
 
+  // prints the grid
   private void updateCanvas() {
     int incY = 10;
     int incX = 10;
@@ -123,8 +158,9 @@ public class RootLayout {
     }
   }
 
+  // prints the wall of the maze
   private void updateCanvasMap() {
-    int scaleX = (int) this.canvas.getWidth() / this.primaryMap.getCols(); // ?
+    int scaleX = (int) this.canvas.getWidth() / this.primaryMap.getCols();
     int scaleY = (int) this.canvas.getHeight() / this.primaryMap.getRows();
 
     gc.clearRect(0, 0, this.canvas.getWidth(), this.canvas.getHeight());
@@ -140,5 +176,19 @@ public class RootLayout {
         }
       }
     }
+  }
+
+  private void updateCanvas(int[][] path, int value, Color color) {
+    double scaleX = this.canvas.getWidth() / primaryMap.getCols();
+    double scaleY = this.canvas.getHeight() / primaryMap.getRows();
+    gc.setFill(color);
+    for (int row = 0; row < primaryMap.getRows(); row++) {
+      for (int col = 0; col < primaryMap.getCols(); col++) {
+        if (path[row][col] == 2) {
+          gc.fillOval(col * scaleX, row * scaleY, scaleX - 1, scaleY - 1);
+        }
+      }
+    }
+    gc.setFill(Color.BLACK);
   }
 }

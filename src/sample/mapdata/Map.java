@@ -4,14 +4,23 @@ public class Map {
   private String name;
   private Cell[][] mapData;
   private int rows, cols;
-  private double unit;
+  private double unit; // in millimeters
 
   public Map(String name, int rows, int cols, double unit) {
     this.name = name;
     this.mapData = new Cell[rows][cols];
     this.rows = rows;
     this.cols = cols;
+    this.createCells();
     this.unit = unit;
+  }
+
+  private void createCells() {
+    for(int i=0; i<this.rows; i++) {
+      for(int v=0; v<this.cols; v++) {
+        this.mapData[i][v] = new Cell(0);
+      }
+    }
   }
 
   // for debugging

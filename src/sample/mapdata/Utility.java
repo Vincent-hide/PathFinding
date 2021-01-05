@@ -5,7 +5,6 @@ import java.io.*;
 // Static class which holds utility helper functions
 public class Utility {
   public static Map loadMap(String file) {
-
     try {
       String name;
       int row, col;
@@ -71,4 +70,71 @@ public class Utility {
       System.out.println("");
     }
   }
+
+  public static int[][] intScratchPad(Map map, int initValue) {
+    int[][] pad = new int[map.getRows()][map.getCols()];
+    if(initValue != 0) {
+      for(int row=0; row < map.getRows(); row++) {
+        for(int col=0; col<map.getCols(); col++) {
+          pad[row][col] = initValue;
+        }
+      }
+    }
+    return pad;
+  }
+
+  public static boolean recursive(Map map, int[][] temp, int currentRow, int currentCol, int endRow, int endCol) {
+    // === base cases
+    // out of bounds
+    if(currentRow < 0 || currentCol < 0 || currentRow >= map.getRows() || currentCol >= map.getCols()) {
+      return false;
+    }
+
+    // reached the destination
+    if(currentRow == endRow && currentCol == endCol) {
+      return true;
+    }
+
+    // reached to the wall
+    if(map.getMapData()[currentRow][currentCol].getLayerValue() == 1) {
+      return false;
+    }
+
+    // have been here before
+    if(temp[currentRow][currentCol] == 1) {
+      return false;
+    }
+    // base cases ===
+
+    // make as visited
+    temp[currentRow][currentCol] = 1;
+
+    // north
+    if(recursive(map, temp, currentRow-1, currentCol, endRow, endCol)) {
+      temp[currentRow][currentCol] = 2; // make as correct path
+      return true;
+    }
+
+    // east
+    if(recursive(map, temp, currentRow, currentCol+1, endRow, endCol)) {
+      temp[currentRow][currentCol] = 2; // make as correct path
+      return true;
+    }
+
+    // south
+    if(recursive(map, temp, currentRow+1, currentCol, endRow, endCol)) {
+      temp[currentRow][currentCol] = 2; // make as correct path
+      return true;
+    }
+
+    // east
+    if(recursive(map, temp, currentRow, currentCol-1, endRow, endCol)) {
+      temp[currentRow][currentCol] = 2; // make as correct path
+      return true;
+    }
+
+    return false;
+  }
+
+
 }
