@@ -18,6 +18,7 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.stage.FileChooser;
 import sample.mapdata.Utility;
+import sample.mapdata.method.Recursion;
 
 public class RootLayout {
   private Stage mainStage;
@@ -122,7 +123,8 @@ public class RootLayout {
           int endY = primaryMap.getCols() - 1;
           int[][] path = Utility.intScratchPad(primaryMap, -1);
 
-          if (Utility.recursive(primaryMap, path, startX, startY, endX, endY)) {
+          Recursion recursion = new Recursion(primaryMap, path);
+          if (recursion.solve(startX, startY, endX, endY)) {
             System.out.println("Path Detected");
              updateCanvas(path, 2, Color.BLUE);
           } else {
