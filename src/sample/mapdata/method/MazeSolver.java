@@ -11,5 +11,5 @@ abstract public class MazeSolver {
     this.values = values;
   }
 
-  abstract boolean solve(int currentRow, int currentCol, int endRow, int endCol);
+  abstract boolean solve(int row, int col, int endRow, int endCol);
 }

@@ -18,6 +18,7 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.stage.FileChooser;
 import sample.mapdata.Utility;
+import sample.mapdata.method.Dijkstra;
 import sample.mapdata.method.Recursion;
 
 public class RootLayout {
@@ -126,7 +127,28 @@ public class RootLayout {
           Recursion recursion = new Recursion(primaryMap, path);
           if (recursion.solve(startX, startY, endX, endY)) {
             System.out.println("Path Detected");
-             updateCanvas(path, 2, Color.BLUE);
+            updateCanvas(path, 2, Color.BLUE);
+          } else {
+            System.out.println("No Path Detected");
+          }
+        }
+      }
+    });
+
+    dijkstra.setOnAction(new EventHandler<ActionEvent>() {
+      @Override
+      public void handle(ActionEvent actionEvent) {
+        if (primaryMap != null) {
+          int startX = 0;
+          int startY = 0;
+          int endX = primaryMap.getRows() - 1;
+          int endY = primaryMap.getCols() - 1;
+
+          int[][] path = Utility.intScratchPad(primaryMap, 0);
+          Dijkstra dijkstra = new Dijkstra(primaryMap, path);
+          if(dijkstra.solve(startX, startY, endX, endY)) {
+            System.out.println("path found");
+            updateCanvas(path, startX, startY, endX, endY, Color.BLUEVIOLET);
           } else {
             System.out.println("No Path Detected");
           }
@@ -180,6 +202,7 @@ public class RootLayout {
     }
   }
 
+  // display a path
   private void updateCanvas(int[][] path, int value, Color color) {
     double scaleX = this.canvas.getWidth() / primaryMap.getCols();
     double scaleY = this.canvas.getHeight() / primaryMap.getRows();
@@ -192,5 +215,37 @@ public class RootLayout {
       }
     }
     gc.setFill(Color.BLACK);
+  }
+
+  // Dijkstra
+  private void updateCanvas(int[][] path, int startRow, int startCol, int endRow, int endCol, Color color) {
+    double scaleX = this.canvas.getWidth() / primaryMap.getCols();
+    double scaleY = this.canvas.getHeight() / primaryMap.getRows();
+
+    int currentRow = endRow;
+    int currentCol = endCol;
+    this.gc.setFill(color);
+
+    while(currentRow != startRow || currentCol != startCol) {
+      this.gc.fillOval(currentCol * scaleX, currentRow*scaleY, scaleX-1, scaleY-1);
+      switch(path[currentRow][currentCol]) {
+        case 1:
+          currentRow--;
+          break;
+        case 2:
+          currentCol++;
+          break;
+        case 3:
+          currentRow++;
+          break;
+        case 4:
+          currentCol--;
+          break;
+        default:
+          System.out.println("Default Reach. Check what you are passing");
+
+      }
+    }
+    this.gc.setFill(Color.BLACK);
   }
 }
