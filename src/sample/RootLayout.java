@@ -35,7 +35,7 @@ public class RootLayout {
     borderPane.getStyleClass().add("root");
     borderPane.setPadding(new Insets(5));
 
-    Label top = sample.Utility.createLabel("TOP", "bg-2");
+    Label top = sample.Utility.createLabel("Path Finding - Dijkstra", "bg-2");
     top.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
     borderPane.setTop(top);
 
@@ -48,7 +48,7 @@ public class RootLayout {
     VBox right = rightSizePathBar();
     borderPane.setRight(right);
 
-    Label bottom = sample.Utility.createLabel("BOTTOM", "bg-6");
+    Label bottom = sample.Utility.createLabel("Built in conjunction with Dr.Andrew Rudder", "bg-6");
     bottom.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
     borderPane.setBottom(bottom);
 
