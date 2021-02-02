@@ -93,18 +93,25 @@ class Board():
           position = pygame.mouse.get_pos()
           row, col = self.get_clicked_position(position)
           spot = grid[row][col]
-          if not start:
+          if not start and spot != end: # if start is not selected & the cell clicked is not end node
             start = spot
             start.make_start()
-          elif not end:
+          elif not end and spot != start: # if end is not selected & the cell clicked is not start node
             end = spot
             end.make_end()
 
           elif spot != end and spot != start:
             spot.make_barrier()
 
-        # RIGHT
+        # RIGHT CLICK
         elif pygame.mouse.get_pressed()[2]:
-          pass
+          position = pygame.mouse.get_pos()
+          row, col = self.get_clicked_position(position)
+          spot = grid[row][col]
+          spot.reset()
+          if spot == start:
+            start = None
+          elif spot == end:
+            end = None
 
     # pygame.quit()
