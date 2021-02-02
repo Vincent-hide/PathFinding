@@ -2,6 +2,7 @@ import pygame
 
 from colors import COLORS
 from Modules.Node import Node
+from queue import PriorityQueue
 
 class Board():
 
@@ -70,6 +71,64 @@ class Board():
 
     return row, col
 
+  def algorithm(self, draw, grid, start, end):
+    count = 0
+    visited = PriorityQueue()
+    # A* Start, count, node
+    visited.put((0, count, start))
+    # to trace back where a node came from 
+    trace = {}
+    # cost: set the code of all the nodes to 0
+    cost = {spot: float("inf") for row in grid for spot in row}
+    # cost of start node is 0
+    cost[start] = 0
+    # A* Score: set the A* Score of all the nodes to 0
+    A_Score = {spot: float("inf") for row in grid for spot in row}
+    # A* Score = Heuristic + Cost
+    A_Score[start] = self.heuristic(start.get_pos(), end.get_pos())
+
+    # since PriorityQueue does not have function to tell us if a node is visited or not
+    visited_hash = {start}
+
+    while not visited.empty():
+      for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+          pygame.quit()
+
+      curr_node = visited.get()[2] # node is stored at the index of 2
+      visited_hash.remove(curr_node)
+
+      if curr_node == end:
+        return True
+
+      for neighbor in curr_node.neighbors:
+        temp_cost = cost[curr_node] + 1
+
+        # if the temp cost is lesser than the cost score previously
+        if temp_cost < cost[neighbor]:
+          # update
+          trace[neighbor] = curr_node
+          cost[neighbor] = temp_cost
+          A_Score[neighbor] = temp_cost + self.heuristic(neighbor.get_pos(), end.get_pos())
+
+          if neighbor not in visited_hash:
+            count += 1
+            visited.put((A_Score[neighbor], count, neighbor))
+            visited_hash.add(neighbor)
+            neighbor.make_open()
+      draw()
+
+      if curr_node != start:
+        curr_node.make_open()
+
+    return False
+
+  # estimate how much cost to get to the goal from a given coordinate
+  def heuristic(self, p1, p2):
+    x1, y1 = p1
+    x2, y2 = p2
+    return abs(x1 - x2) + abs(y1 - y2)
+
   def run(self):
     grid = self.make_grid()
 
@@ -114,4 +173,11 @@ class Board():
           elif spot == end:
             end = None
 
+        # if keyboard down is pressed
+        if event.type == pygame.KEYDOWN:
+          if event.key == pygame.K_SPACE and not started:
+            for row in grid:
+              for spot in row:
+                spot.update_neighbors(grid)
+            self.algorithm(lambda: self.draw(grid), grid, start, end)
     # pygame.quit()
