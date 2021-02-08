@@ -5,8 +5,8 @@ pygame.display.set_caption("A* Path Finding Algorithm")
 
 width = 800
 height = 800
-rows = 20
-cols = 20
+rows = 25
+cols = 25
 board = Board(width, height, rows, cols)
 print(board)
 

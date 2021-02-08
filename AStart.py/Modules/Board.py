@@ -5,7 +5,6 @@ from Modules.Node import Node
 from queue import PriorityQueue
 
 class Board():
-
   def __init__(self):
     self.width = 0
     self.height = 0
@@ -71,6 +70,12 @@ class Board():
 
     return row, col
 
+  def show_path(self, trace, current, draw):
+    while current in trace:
+      current = trace[current]
+      current.make_path()
+
+
   def algorithm(self, draw, grid, start, end):
     count = 0
     visited = PriorityQueue()
@@ -99,6 +104,8 @@ class Board():
       visited_hash.remove(curr_node)
 
       if curr_node == end:
+        self.show_path(trace, end, draw)
+        end.make_end()
         return True
 
       for neighbor in curr_node.neighbors:
@@ -136,16 +143,12 @@ class Board():
     end = None
 
     run = True
-    started = False
 
     while run:
       self.draw(grid)
       for event in pygame.event.get():
         if event.type == pygame.QUIT:
           run = False
-
-        if started:
-          continue
 
         # LEFT CLICK
         if pygame.mouse.get_pressed()[0]:
@@ -175,9 +178,15 @@ class Board():
 
         # if keyboard down is pressed
         if event.type == pygame.KEYDOWN:
-          if event.key == pygame.K_SPACE and not started:
+          # when the space key is pressed, make sure start and end nodes are created
+          if event.key == pygame.K_SPACE and start and end:
             for row in grid:
               for spot in row:
                 spot.update_neighbors(grid)
             self.algorithm(lambda: self.draw(grid), grid, start, end)
+
+          if event.key == pygame.K_c:
+            start = None
+            end = None,
+            grid = self.make_grid()
     # pygame.quit()
